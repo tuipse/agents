@@ -17,7 +17,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from agent.utils import (
     get_research_topic,
 )
-from src.agent.memory.tools import get_memory_tools
+from agent.memory.tools import get_memory_tools
 
 def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerationState:
     """LangGraph node that generates search queries based on the User's question.

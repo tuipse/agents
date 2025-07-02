@@ -15,8 +15,9 @@ Instructions:
 - Queries should be diverse, if the topic is broad, generate more than 1 query.
 - Don't generate multiple similar queries, 1 is enough.
 - Query should ensure that the most current information is gathered. The current date is {current_date}.
+- Always save in your memory the relevant detailed information about the query.
 
-Format: 
+Format:
 - Format your response as a JSON object with ALL two of these exact keys:
    - "rationale": Brief explanation of why these queries are relevant
    - "query": A list of search queries
@@ -40,8 +41,9 @@ Instructions:
 - Query should ensure that the most current information is gathered. The current date is {current_date}.
 - Conduct multiple, diverse searches to gather comprehensive information.
 - Consolidate key findings while meticulously tracking the source(s) for each specific piece of information.
-- The output should be a well-written summary or report based on your search findings. 
+- The output should be a well-written summary or report based on your search findings.
 - Only include the information found in the search results, don't make up any information.
+- Always save in your memory the relevant detailed information about the query and the results.
 
 Research Topic:
 {research_topic}
@@ -54,6 +56,8 @@ Instructions:
 - If provided summaries are sufficient to answer the user's question, don't generate a follow-up query.
 - If there is a knowledge gap, generate a follow-up query that would help expand your understanding.
 - Focus on technical details, implementation specifics, or emerging trends that weren't fully covered.
+- Always Search in your memory the relevant detailed information about the results of the research so far.
+- Always Save in your memory the relevant detailed information about the results of the evaluation.
 
 Requirements:
 - Ensure the follow-up query is self-contained and includes necessary context for web search.
@@ -83,11 +87,12 @@ answer_instructions = """Generate a high-quality answer to the user's question b
 
 Instructions:
 - The current date is {current_date}.
-- You are the final step of a multi-step research process, don't mention that you are the final step. 
+- You are the final step of a multi-step research process, don't mention that you are the final step.
 - You have access to all the information gathered from the previous steps.
 - You have access to the user's question.
 - Generate a high-quality answer to the user's question based on the provided summaries and the user's question.
 - Include the sources you used from the Summaries in the answer correctly, use markdown format (e.g. [apnews](https://vertexaisearch.cloud.google.com/id/1-0)). THIS IS A MUST.
+- Always Search in your memory the relevant information to use in your response.
 
 User Context:
 - {research_topic}
