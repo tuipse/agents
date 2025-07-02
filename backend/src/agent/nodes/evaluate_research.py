@@ -1,11 +1,11 @@
 from langgraph.types import Send
 from langchain_core.runnables import RunnableConfig
 
-from agent.state import (
+from src.agent.state import (
     OverallState,
     ReflectionState,
 )
-from agent.configuration import Configuration
+from src.agent.configuration import Configuration
 
 
 def evaluate_research(

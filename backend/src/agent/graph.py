@@ -4,16 +4,17 @@ from dotenv import load_dotenv
 from langgraph.graph import StateGraph
 from langgraph.graph import START, END
 
-from agent.nodes.continue_to_web_research import continue_to_web_research
-from agent.nodes.evaluate_research import evaluate_research
-from agent.nodes.finalize_answer import finalize_answer
-from agent.nodes.generate_query import generate_query
-from agent.nodes.reflection import reflection
-from agent.nodes.web_research import web_research
-from agent.state import (
+from src.agent.nodes.memorize import memorize
+from src.agent.nodes.continue_to_web_research import continue_to_web_research
+from src.agent.nodes.evaluate_research import evaluate_research
+from src.agent.nodes.finalize_answer import finalize_answer
+from src.agent.nodes.generate_query import generate_query
+from src.agent.nodes.reflection import reflection
+from src.agent.nodes.web_research import web_research
+from src.agent.state import (
     OverallState,
 )
-from agent.configuration import Configuration
+from src.agent.configuration import Configuration
 
 load_dotenv()
 
@@ -29,6 +30,7 @@ builder.add_node("generate_query", generate_query)
 builder.add_node("web_research", web_research)
 builder.add_node("reflection", reflection)
 builder.add_node("finalize_answer", finalize_answer)
+builder.add_node("memorize", memorize)
 
 # Set the entrypoint as `generate_query`
 # This means that this node is the first one called
@@ -44,6 +46,7 @@ builder.add_conditional_edges(
     "reflection", evaluate_research, ["web_research", "finalize_answer"]
 )
 # Finalize the answer
-builder.add_edge("finalize_answer", END)
+builder.add_edge("finalize_answer", "memorize")
+builder.add_edge("memorize", END)
 
 graph = builder.compile(name="agent")

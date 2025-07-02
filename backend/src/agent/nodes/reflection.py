@@ -1,19 +1,19 @@
 import os
 
-from agent.tools_and_schemas import Reflection
+from src.agent.tools_and_schemas import Reflection
 from langchain_core.runnables import RunnableConfig
 
-from agent.state import (
+from src.agent.state import (
     OverallState,
     ReflectionState,
 )
-from agent.configuration import Configuration
-from agent.prompts import (
+from src.agent.configuration import Configuration
+from src.agent.prompts import (
     get_current_date,
     reflection_instructions,
 )
 from langchain_google_genai import ChatGoogleGenerativeAI
-from agent.utils import (
+from src.agent.utils import (
     get_research_topic,
 )
 

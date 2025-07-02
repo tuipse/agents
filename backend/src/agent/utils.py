@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 from langchain_core.messages import AnyMessage, AIMessage, HumanMessage
+import json
 
 
 def get_research_topic(messages: List[AnyMessage]) -> str:
@@ -164,3 +165,9 @@ def get_citations(response, resolved_urls_map):
                     pass
         citations.append(citation)
     return citations
+
+def parse_json_from_response(response):
+    try:
+        return json.loads(response.lstrip('```json').lstrip('```').rstrip('\n').rstrip('```'))
+    except json.JSONDecodeError:
+        raise ValueError("Failed to parse JSON from response")

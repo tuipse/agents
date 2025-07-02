@@ -15,7 +15,9 @@ Instructions:
 - Queries should be diverse, if the topic is broad, generate more than 1 query.
 - Don't generate multiple similar queries, 1 is enough.
 - Query should ensure that the most current information is gathered. The current date is {current_date}.
-- Always save in your memory the relevant detailed information about the query.
+
+Tools:
+- Always use `manage_memory` save in your memory the relevant detailed information about the query.
 
 Format:
 - Format your response as a JSON object with ALL two of these exact keys:

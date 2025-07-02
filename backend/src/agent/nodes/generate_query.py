@@ -1,23 +1,27 @@
 import os
 import uuid
 
-from agent.tools_and_schemas import SearchQueryList
+from langchain_core.prompts.prompt import PromptTemplate
+
+from src.agent.tools_and_schemas import SearchQueryList
 from langchain_core.runnables import RunnableConfig
 
-from agent.state import (
+from src.agent.state import (
     OverallState,
     QueryGenerationState,
 )
-from agent.configuration import Configuration
-from agent.prompts import (
+from src.agent.configuration import Configuration
+from src.agent.prompts import (
     get_current_date,
     query_writer_instructions,
 )
 from langchain_google_genai import ChatGoogleGenerativeAI
-from agent.utils import (
+from src.agent.utils import (
     get_research_topic,
 )
-from agent.memory.tools import get_memory_tools
+from src.agent.memory.tools import get_memory_tools
+from src.agent.utils import parse_json_from_response
+from langgraph.prebuilt.chat_agent_executor import create_react_agent
 
 def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerationState:
     """LangGraph node that generates search queries based on the User's question.
@@ -47,17 +51,32 @@ def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerati
         temperature=1.0,
         max_retries=2,
         api_key=os.getenv("GEMINI_API_KEY"),
-        tools=memory_tools
     )
     structured_llm = llm.with_structured_output(SearchQueryList)
 
+
     # Format the prompt
     current_date = get_current_date()
-    formatted_prompt = query_writer_instructions.format(
-        current_date=current_date,
-        research_topic=get_research_topic(state["messages"]),
-        number_queries=state["initial_search_query_count"],
+    # formatted_prompt = query_writer_instructions.format(
+    #     current_date=current_date,
+    #     research_topic=get_research_topic(state["messages"]),
+    #     number_queries=state["initial_search_query_count"],
+    # )
+    #
+    prompt_variables = {
+        "current_date": current_date,
+        "research_topic": get_research_topic(state["messages"]),
+        "number_queries": state["initial_search_query_count"],
+    }
+
+    react_agent = create_react_agent(
+        model=llm,
+        tools=memory_tools,
+        prompt=PromptTemplate.from_template(query_writer_instructions, partial_variables=prompt_variables),
+        response_format=SearchQueryList
     )
     # Generate the search queries
-    result = structured_llm.invoke(formatted_prompt)
-    return {"search_query": result.query}
+    # result = structured_llm.invoke(formatted_prompt)
+    result = react_agent.invoke(prompt_variables)
+    print(result)
+    return {"search_query": parse_json_from_response(result['messages'][-1].content)['query']}

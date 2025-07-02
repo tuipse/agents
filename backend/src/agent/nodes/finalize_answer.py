@@ -3,19 +3,19 @@ import os
 from langchain_core.messages import AIMessage
 from langchain_core.runnables import RunnableConfig
 
-from agent.state import (
+from src.agent.state import (
     OverallState,
 )
-from agent.configuration import Configuration
-from agent.prompts import (
+from src.agent.configuration import Configuration
+from src.agent.prompts import (
     get_current_date,
     answer_instructions,
 )
 from langchain_google_genai import ChatGoogleGenerativeAI
-from agent.utils import (
+from src.agent.utils import (
     get_research_topic,
 )
-from agent.memory.tools import get_memory_tools
+from src.agent.memory.tools import get_memory_tools
 
 
 def finalize_answer(state: OverallState, config: RunnableConfig):
