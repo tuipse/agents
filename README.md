@@ -45,10 +45,7 @@ pip install .
 
 **Frontend:**
 
-```bash
-cd frontend
-npm install
-```
+### **Moved to [TUIPSE/agent-chat-ui](https://github.com/TUIPSE/agent-chat-ui)**
 
 **3. Run Development Servers:**
 
@@ -117,4 +114,4 @@ Open your browser and navigate to `http://localhost:8123/app/` to see the applic
 
 ## License
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details. 
+This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
