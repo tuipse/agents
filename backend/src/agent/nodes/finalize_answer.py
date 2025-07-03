@@ -16,6 +16,7 @@ from src.agent.utils import (
     get_research_topic,
 )
 from src.agent.memory.tools import get_memory_tools
+from src.agent.memory.tools import search_in_memory
 
 
 def finalize_answer(state: OverallState, config: RunnableConfig):
@@ -34,16 +35,18 @@ def finalize_answer(state: OverallState, config: RunnableConfig):
     configurable = Configuration.from_runnable_config(config)
     reasoning_model = state.get("reasoning_model") or configurable.answer_model
 
+    user_id = "0" if state.get("user_id") is None else state.get("user_id")
+    memory_items = search_in_memory('', user_id,  "long-term-memory")
+
     # Format the prompt
     current_date = get_current_date()
     formatted_prompt = answer_instructions.format(
         current_date=current_date,
         research_topic=get_research_topic(state["messages"]),
         summaries="\n---\n\n".join(state["web_research_result"]),
+        memory=memory_items
     )
 
-    user_id = "0" if state.get("user_id") is None else state.get("user_id")
-    memory_tools = get_memory_tools(user_id)
 
     # init Reasoning Model, default to Gemini 2.5 Flash
     llm = ChatGoogleGenerativeAI(
@@ -51,7 +54,6 @@ def finalize_answer(state: OverallState, config: RunnableConfig):
         temperature=0,
         max_retries=2,
         api_key=os.getenv("GEMINI_API_KEY"),
-        tools=memory_tools
     )
     result = llm.invoke(formatted_prompt)
 

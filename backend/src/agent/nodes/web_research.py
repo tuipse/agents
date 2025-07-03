@@ -17,6 +17,7 @@ from src.agent.utils import (
     insert_citation_markers,
     resolve_urls,
 )
+from src.agent.memory.tools import search_in_memory
 
 # Used for Google Search API
 genai_client = Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -35,9 +36,12 @@ def web_research(state: WebSearchState, config: RunnableConfig) -> OverallState:
     """
     # Configure
     configurable = Configuration.from_runnable_config(config)
+    user_id = "0" if state.get("user_id") is None else state.get("user_id")
+    memory_items = search_in_memory('', user_id,  "long-term-memory")
     formatted_prompt = web_searcher_instructions.format(
         current_date=get_current_date(),
         research_topic=state["search_query"],
+        memory=memory_items
     )
 
     # Uses the google genai client as the langchain client doesn't return grounding metadata

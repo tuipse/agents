@@ -16,6 +16,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from src.agent.utils import (
     get_research_topic,
 )
+from src.agent.memory.tools import search_in_memory
 
 
 def reflection(state: OverallState, config: RunnableConfig) -> ReflectionState:
@@ -33,6 +34,8 @@ def reflection(state: OverallState, config: RunnableConfig) -> ReflectionState:
         Dictionary with state update, including search_query key containing the generated follow-up query
     """
     configurable = Configuration.from_runnable_config(config)
+    user_id = "0" if state.get("user_id") is None else state.get("user_id")
+    memory_items = search_in_memory('', user_id,  "long-term-memory")
     # Increment the research loop count and get the reasoning model
     state["research_loop_count"] = state.get("research_loop_count", 0) + 1
     reasoning_model = state.get("reasoning_model", configurable.reflection_model)
@@ -43,6 +46,7 @@ def reflection(state: OverallState, config: RunnableConfig) -> ReflectionState:
         current_date=current_date,
         research_topic=get_research_topic(state["messages"]),
         summaries="\n\n---\n\n".join(state["web_research_result"]),
+        memory=memory_items
     )
     # init Reasoning Model
     llm = ChatGoogleGenerativeAI(

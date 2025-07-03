@@ -17,6 +17,7 @@ dependencies = [
     "fastapi",
     "google-genai",
     "langmem (>=0.0.27,<0.0.28)",
+    "langgraph-checkpoint-postgres (>=2.0.21,<3.0.0)",
 ]
 
 

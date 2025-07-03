@@ -2,6 +2,7 @@ import os
 import uuid
 
 from langchain_core.prompts.prompt import PromptTemplate
+from langgraph.types import Send
 
 from src.agent.tools_and_schemas import SearchQueryList
 from langchain_core.runnables import RunnableConfig
@@ -22,8 +23,12 @@ from src.agent.utils import (
 from src.agent.memory.tools import get_memory_tools
 from src.agent.utils import parse_json_from_response
 from langgraph.prebuilt.chat_agent_executor import create_react_agent
+from langgraph.config import get_store
 
-def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerationState:
+from src.agent.memory.tools import search_in_memory
+
+
+def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerationState|Send:
     """LangGraph node that generates search queries based on the User's question.
 
     Uses Gemini 2.0 Flash to create an optimized search queries for web research based on
@@ -39,7 +44,6 @@ def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerati
     configurable = Configuration.from_runnable_config(config)
 
     user_id = "0" if state.get("user_id") is None else state.get("user_id")
-    memory_tools = get_memory_tools(user_id)
 
     # check for custom initial search query count
     if state.get("initial_search_query_count") is None:
@@ -54,29 +58,22 @@ def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerati
     )
     structured_llm = llm.with_structured_output(SearchQueryList)
 
+    memory_items = search_in_memory(state['messages'][-1].content, user_id,  "long-term-memory")
 
     # Format the prompt
     current_date = get_current_date()
-    # formatted_prompt = query_writer_instructions.format(
-    #     current_date=current_date,
-    #     research_topic=get_research_topic(state["messages"]),
-    #     number_queries=state["initial_search_query_count"],
-    # )
-    #
+
     prompt_variables = {
         "current_date": current_date,
         "research_topic": get_research_topic(state["messages"]),
         "number_queries": state["initial_search_query_count"],
+        "memory": memory_items
     }
 
-    react_agent = create_react_agent(
-        model=llm,
-        tools=memory_tools,
-        prompt=PromptTemplate.from_template(query_writer_instructions, partial_variables=prompt_variables),
-        response_format=SearchQueryList
-    )
-    # Generate the search queries
-    # result = structured_llm.invoke(formatted_prompt)
-    result = react_agent.invoke(prompt_variables)
-    print(result)
-    return {"search_query": parse_json_from_response(result['messages'][-1].content)['query']}
+    result = structured_llm.invoke(query_writer_instructions.format(**prompt_variables))
+
+    # Check if list or string in result_search_query is not empty
+    if isinstance(result.query, list) and len(result.query) > 0:
+        return {"search_query": result.query}
+    else:
+        return Send('finalize_answer', {})
