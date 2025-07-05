@@ -1,6 +1,12 @@
-from typing import Any, Dict, List
-from langchain_core.messages import AnyMessage, AIMessage, HumanMessage
 import json
+import os
+
+from typing import Any, Dict, List
+from langchain_core.messages import AnyMessage, AIMessage, HumanMessage, SystemMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langgraph.types import Send
+
+from src.agent.tools_and_schemas import Intention
 
 
 def get_research_topic(messages: List[AnyMessage]) -> str:
@@ -171,3 +177,19 @@ def parse_json_from_response(response):
         return json.loads(response.lstrip('```json').lstrip('```').rstrip('\n').rstrip('```'))
     except json.JSONDecodeError:
         raise ValueError("Failed to parse JSON from response")
+
+
+def get_message_intention(message: HumanMessage) -> Intention:
+    llm = ChatGoogleGenerativeAI(
+        model='gemini-2.5-flash',
+        temperature=0.1,
+        max_retries=2,
+        api_key=os.getenv('GEMINI_API_KEY')
+    )
+
+    structured_llm = llm.with_structured_output(Intention)
+
+    return structured_llm.invoke([
+        SystemMessage("Return a JSON with the intention of the user's message. Can be either 'web_research' or 'finalize_answer'. The JSON should be in this format: `{\"intention\": \"web_research\"}`."),
+        message
+    ])

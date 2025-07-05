@@ -21,3 +21,12 @@ class Reflection(BaseModel):
     follow_up_queries: List[str] = Field(
         description="A list of follow-up queries to address the knowledge gap."
     )
+
+class Intention(BaseModel):
+    intention: str = Field(
+        description="The user's intention or goal for the conversation.",
+        examples=[
+            "web_research",
+            "finalize_answer"
+        ]
+    )

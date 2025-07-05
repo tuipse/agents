@@ -4,6 +4,7 @@ import uuid
 from langchain_core.prompts.prompt import PromptTemplate
 from langgraph.types import Send
 
+from src.agent.utils import get_message_intention
 from src.agent.tools_and_schemas import SearchQueryList
 from langchain_core.runnables import RunnableConfig
 
@@ -70,10 +71,11 @@ def generate_query(state: OverallState, config: RunnableConfig) -> QueryGenerati
         "memory": memory_items
     }
 
-    result = structured_llm.invoke(query_writer_instructions.format(**prompt_variables))
+    message_intention = get_message_intention(state['messages'][-1])
 
     # Check if list or string in result_search_query is not empty
-    if isinstance(result.query, list) and len(result.query) > 0:
-        return {"search_query": result.query}
+    if message_intention.intention == 'web_research':
+        result = structured_llm.invoke(query_writer_instructions.format(**prompt_variables))
+        return Send('web_research', {"search_query": result.query, 'messages': state['messages']})
     else:
-        return Send('finalize_answer', {})
+        return Send('finalize_answer', state)
